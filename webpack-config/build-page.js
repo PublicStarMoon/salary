@@ -24,7 +24,11 @@ module.exports = () => {
             rules: [{
                 test: /(.ts)$/,
                 use: {
-                    loader: 'ts-loader'
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: 'tsconfig.webpack.json',
+                        transpileOnly: true // Skip type checking
+                    }
                 }
             }, {
                 test: /(.js)$/,

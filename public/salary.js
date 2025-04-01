@@ -34,6 +34,7 @@ function countSalary ({
         supplementaryFund: 0.05, // 补充公积金 5%
     },
     extraBonus = [], // 每月额外奖金
+    housingFundRange = {min: 2690, max: 36920}, // 公积金计算上下限
 } = {
 }) {
 
@@ -49,6 +50,7 @@ function countSalary ({
         insuranceAndFund: calculateInsuranceAndFund(
             insuranceAndFundBase,
             insuranceAndFundRate,
+            housingFundRange,
         ), // 五险一金
         awardsPreTax, // 税前年终奖
         awardsTax: 0,
@@ -58,7 +60,7 @@ function countSalary ({
     let totalPersonalTncomeTax = 0; // 累计个人所得税缴税额
 
     for (let i = 1; i < 13; i++) {
-        const cumulativePreTaxIncome = i * salary + extraBonus[i - 1]; // 累计应税收入 todo 额外津贴奖金
+        const cumulativePreTaxIncome = i * salary + (extraBonus[i - 1] || 0); // 累计应税收入 todo 额外津贴奖金
         const accumulatedTaxFreeIncome = 0; // 累计免税收入 todo
         const cumulativeDeductions = startingSalary * i; // 累计减除费用
         const cumulativeSpecialDeduction = result.insuranceAndFund.totalFund * i; // 累计专项扣除
@@ -70,13 +72,12 @@ function countSalary ({
             cumulativePreTaxIncome - accumulatedTaxFreeIncome - cumulativeDeductions -
             cumulativeSpecialDeduction - accumulatedSpecialAdditionalDeductions - others;
 
-        salaryTax = calculatePersionalIncomeTax({
+        const salaryTax = calculatePersionalIncomeTax({
             accumulatedTaxableIncome,
             totalPersonalTncomeTax
         }); // 当月个人所得税
 
-        debugger;
-        const salaryAfterTax = salary - result.insuranceAndFund - salaryTax;
+        const salaryAfterTax = salary - result.insuranceAndFund.totalFund - salaryTax;
         result.salaryAfterTax.push(salaryAfterTax);
         result.salaryTax.push(salaryTax);
         result.totalSalaryAfterTax += salaryAfterTax;
@@ -113,26 +114,24 @@ function calculateYearEndAwardsTax ({
     const {rate, deduction} = countYearEndAwardsLevel(base / 12);
     return base * rate - deduction;
     // 年终奖个人所得税计算方式：
-    // 1、发放年终奖的当月工资高于5000元时，年终奖扣税方式为：年终奖乘税率-速算扣除数，税率是按年终奖/12作为“应纳税所得额”对应的税率。
-    // 2、当月工资低于5000元时，年终奖个人所得税=(年终奖-(5000-月工资))乘税率-速算扣除数，税率是按年终奖-(5000-月工资)除以12作为“应纳税所得额”对应的税率。
+    // 1、发放年终奖的当月工资高于5000元时，年终奖扣税方式为：年终奖乘税率-速算扣除数，税率是按年终奖/12作为"应纳税所得额"对应的税率。
+    // 2、当月工资低于5000元时，年终奖个人所得税=(年终奖-(5000-月工资))乘税率-速算扣除数，税率是按年终奖-(5000-月工资)除以12作为"应纳税所得额"对应的税率。
 }
 
 // 五险一金计算器
-function calculateInsuranceAndFund (base, rate) {
+function calculateInsuranceAndFund (base, rate, housingFundRange) {
     const result = {};
     let totalFund = 0;
-
-    const housingFundRange = [ 2590, 34188 ];
 
     for (const k in rate) {
 
         let countBase = base;
 
         if (k === 'housingFund' || k === 'supplementaryFund') {
-            if (base < housingFundRange[0]) {
-                countBase = housingFundRange[0];
-            } else if (base > housingFundRange[1]) {
-                countBase = housingFundRange[1];
+            if (base < housingFundRange.min) {
+                countBase = housingFundRange.min;
+            } else if (base > housingFundRange.max) {
+                countBase = housingFundRange.max;
             }
         }
 

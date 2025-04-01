@@ -88,7 +88,7 @@ export function calculateSalary ({
     const {
         salaryAfterTax,
         salaryTax,
-        totalSalaryAfterTaxExcludeAwards,
+        totalSalaryAfterTaxIncludeHouseFund,
         salaryTotalTax,
         totalSalaryAfterTax
     } = accumulateCalculate({
@@ -98,6 +98,8 @@ export function calculateSalary ({
         specialAdditionalDeduction,
         totalFund: insuranceAndFund.totalFund,
         awardsAfterTax,
+        insuranceAndFund,
+        insuranceAndFundOfCompany,
     });
     return {
         salaryBase: salary, // 月基础工资
@@ -106,9 +108,10 @@ export function calculateSalary ({
         salaryAfterTaxAvg: avgArray(salaryAfterTax),
         salaryTax, // 每月个人所得税
         salaryTotalTax,
-        totalSalaryAfterTaxExcludeAwards, // 除去年终奖总收入
+        totalSalaryAfterTaxIncludeHouseFund, // 除去年终奖总收入
         totalSalaryPreTax: awardsPreTax + salary * 12 + sumArray(extraBonus), // 税前年总收入
         totalSalaryAfterTax, // 税后年总收入
+        totalHousingFundPerYear: (insuranceAndFund.totalHousingFund + insuranceAndFundOfCompany.totalHousingFund) * 12, // 年公积金收入
         insuranceAndFund, // 五险一金
         insuranceAndFundOfCompany,
         awardsPreTax, // 税前年终奖
@@ -155,15 +158,19 @@ function accumulateCalculate ({
     specialAdditionalDeduction,
     totalFund,
     awardsAfterTax,
+    insuranceAndFund,
+    insuranceAndFundOfCompany,
 }: Pick<
     ICalculateData,
     'salary' | 'extraBonus' | 'startingSalary' | 'specialAdditionalDeduction'
 > & {
     totalFund: number; // 每月累计专项扣除 就是个人缴纳的五险一金
     awardsAfterTax: number;
+    insuranceAndFund: ReturnType<typeof calculateInsuranceAndFund>;
+    insuranceAndFundOfCompany: ReturnType<typeof calculateInsuranceAndFund>;
 }): Pick<
     ICalculateResult,
-    'salaryAfterTax' | 'salaryTax' | 'totalSalaryAfterTaxExcludeAwards' | 'salaryTotalTax' | 'totalSalaryAfterTax'
+    'salaryAfterTax' | 'salaryTax' | 'totalSalaryAfterTaxIncludeHouseFund' | 'salaryTotalTax' | 'totalSalaryAfterTax'
 > {
     const salaryAfterTax: number[] = [];
     const salaryTax: number[] = [];
@@ -199,14 +206,14 @@ function accumulateCalculate ({
         totalPersonalTncomeTax += singleSalaryTax; // 累计个人所得税缴税额
     }
 
-    const totalSalaryAfterTaxExcludeAwards = sumArray(salaryAfterTax);
+    const totalSalaryAfterTaxIncludeHouseFund = sumArray(salaryAfterTax) + awardsAfterTax + (insuranceAndFund.totalHousingFund + insuranceAndFundOfCompany.totalHousingFund) * 12;
     const salaryTotalTax = sumArray(salaryTax);
 
     return {
         salaryAfterTax,
         salaryTax,
-        totalSalaryAfterTaxExcludeAwards,
+        totalSalaryAfterTaxIncludeHouseFund,
         salaryTotalTax,
-        totalSalaryAfterTax: totalSalaryAfterTaxExcludeAwards + awardsAfterTax
+        totalSalaryAfterTax: totalSalaryAfterTaxIncludeHouseFund - (insuranceAndFund.totalHousingFund + insuranceAndFundOfCompany.totalHousingFund) * 12
     };
 }

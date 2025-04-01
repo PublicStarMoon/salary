@@ -56,16 +56,16 @@ export interface ICalculateResult {
     salaryAfterTaxAvg: number;
     salaryTax: number[];
     salaryTotalTax: number;
-    totalSalaryAfterTaxExcludeAwards: number;
+    totalSalaryAfterTaxIncludeHouseFund: number; // 年税后总包（含公积金）
     totalSalaryPreTax: number;
     totalSalaryAfterTax: number;
+    totalHousingFundPerYear: number; // 年公积金收入 (个人+公司)*12
     insuranceAndFund: IInsuranceAndFundResult;
     insuranceAndFundOfCompany: IInsuranceAndFundResult;
     awardsPreTax: number;
     awardsTax: number;
     awardsAfterTax: number;
 }
-
 export default class Salary implements ICalculateData {
     salary: number; // 基础工资
     specialAdditionalDeduction: number; // 每月专项附加扣除 租房扣除

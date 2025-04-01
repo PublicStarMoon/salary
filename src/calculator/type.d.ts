@@ -59,6 +59,7 @@ export interface ICalculateResult {
     totalSalaryAfterTaxExcludeAwards: number;
     totalSalaryPreTax: number;
     totalSalaryAfterTax: number;
+    totalHousingFundPerYear: number; // 年公积金收入 (个人+公司)*12
     insuranceAndFund: IInsuranceAndFundResult;
     insuranceAndFundOfCompany: IInsuranceAndFundResult;
     awardsPreTax: number;

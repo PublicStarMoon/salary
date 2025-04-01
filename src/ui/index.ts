@@ -101,11 +101,14 @@ export class UI {
         const salary = this.salary as any;
 
         if (isInput) {
-            this._checkNec(div, isInput, item.nec);
+            // Always make housingFundRange inputs visible by setting nec to true
+            const isHousingFundRange = (key === 'housingFundRange' || (key === 'housingFundRange' && (subKey === 'min' || subKey === 'max')));
+            this._checkNec(div, isInput, item.nec || isHousingFundRange);
+            
             const input = this._ce('input', 'salary-input') as HTMLInputElement;
     
             const value = salary[key];
-            input.value = subKey ? value[subKey] : value;
+            input.value = subKey ? (typeof value === 'object' ? value[subKey] : value) : value;
             if (key !== 'extraBonus')
                 input.type = 'number';
     
@@ -123,6 +126,9 @@ export class UI {
                     }
                 }
                 if (subKey) {
+                    if (!salary[key] || typeof salary[key] !== 'object') {
+                        salary[key] = {};
+                    }
                     salary[key][subKey] = inputValue;
                 } else {
                     salary[key] = inputValue;
@@ -146,12 +152,32 @@ export class UI {
                 if (typeof value === 'number') {
                     value = value.toFixed(2) + '元';
                 } else if (value instanceof Array) {
-                    value = value.map((v, i) => {
-                        return `[${i + 1}月:${v.toFixed(2)}元]`;
-                    }).join(' ');
+                    // Improve array value display formatting
+                    if (key === 'salaryAfterTax' || key === 'salaryTax' || key === 'salaryPreTax') {
+                        // Create a table-like format for monthly data
+                        const rows = [];
+                        for (let i = 0; i < value.length; i += 3) {
+                            const rowItems = [];
+                            for (let j = 0; j < 3 && i + j < value.length; j++) {
+                                const idx = i + j;
+                                rowItems.push(`${idx + 1}月: ${value[idx].toFixed(2)}元`);
+                            }
+                            rows.push(rowItems.join('  '));
+                        }
+                        value = rows.join('\n');
+                    } else {
+                        value = value.map((v, i) => {
+                            return `[${i + 1}月:${v.toFixed(2)}元]`;
+                        }).join(' ');
+                    }
                 }
 
                 result.innerText = value;
+
+                // Add CSS class for formatting
+                if (value instanceof Array || (typeof value === 'string' && value.includes('\n'))) {
+                    result.classList.add('multi-line-result');
+                }
             });
             div.appendChild(result);
         }
@@ -160,14 +186,15 @@ export class UI {
             const info = this._ce('i', 'ei-info-sign');
             const infoStr = item.info || '查看详情';
             info.title = infoStr;
-            if (item.url) {
-                info.onclick = () => {window.open((item.url as string).substring(4));};
-            } else {
-                info.onclick = () => {toast(infoStr || '', 5000);};
-            }
+            info.onclick = () => {
+                if (item.url) {
+                    window.open(item.url);
+                } else {
+                    toast(infoStr);
+                }
+            };
             div.appendChild(info);
         }
-
         return div;
     }
 
@@ -179,30 +206,56 @@ export class UI {
         isInput?: boolean
     }) {
         const fragment = window.document.createDocumentFragment();
-        
-        for (const key in map) {
-            const value = (map as any)[key];
-            let el: HTMLElement;
+        for (const k in map) {
+            const key = k as keyof typeof map;
+            const value = map[key];
             if (value.base) {
-                el = this._createSingleItem({key, item: value, isInput});
+                fragment.appendChild(
+                    this._createSingleItem({
+                        key: key as string,
+                        item: value,
+                        isInput
+                    })
+                );
             } else {
-                el = this._createWrapper(value, isInput);
-                for (const k in value) {
-                    const item = value[k];
-                    if (k !== 'text' && k !== 'nec') {
-                        el.appendChild(this._createSingleItem({key, subKey: k, item, isInput}));
+                const div = this._createWrapper(value, isInput);
+                for (const kk in value) {
+                    const subKey = kk as keyof typeof value;
+
+                    if (subKey === 'text' || subKey === 'nec') continue;
+                    
+                    const subValue = value[subKey];
+                    if (subValue.base) {
+                        div.appendChild(
+                            this._createSingleItem({
+                                key: key as string,
+                                subKey: subKey as string,
+                                item: subValue,
+                                isInput
+                            })
+                        );
                     }
                 }
+                fragment.appendChild(div);
             }
-            fragment.appendChild(el);
         }
-
         return fragment;
     }
 
-    private _ce (name: string, className = '') {
-        const el = window.document.createElement(name);
-        if (className) el.className = className;
+    private _ce (tag: string, classOrText: string) {
+        const el = window.document.createElement(tag);
+        if (classOrText) {
+            if (tag === 'i') {
+                el.className = classOrText;
+            } else if (classOrText.indexOf('salary-') === 0 || classOrText.indexOf('input-') === 0) {
+                // Apply as CSS class if it's a salary- or input- prefixed class name
+                el.className = classOrText;
+            } else if (classOrText.substring(0, 1) === '.') {
+                el.className = classOrText.substring(1);
+            } else {
+                el.innerText = classOrText;
+            }
+        }
         return el;
     }
 }

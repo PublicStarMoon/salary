@@ -5,8 +5,8 @@
  */
 
 // 年终奖个人所得税计算方式：
-// 1、发放年终奖的当月工资高于5000元时，年终奖扣税方式为：年终奖乘税率-速算扣除数，税率是按年终奖/12作为“应纳税所得额”对应的税率。
-// 2、当月工资低于5000元时，年终奖个人所得税=(年终奖-(5000-月工资))乘税率-速算扣除数，税率是按年终奖-(5000-月工资)除以12作为“应纳税所得额”对应的税率。
+// 1、发放年终奖的当月工资高于5000元时，年终奖扣税方式为：年终奖乘税率-速算扣除数，税率是按年终奖/12作为"应纳税所得额"对应的税率。
+// 2、当月工资低于5000元时，年终奖个人所得税=(年终奖-(5000-月工资))乘税率-速算扣除数，税率是按年终奖-(5000-月工资)除以12作为"应纳税所得额"对应的税率。
 
 import {ICalculateData} from './index.d';
 import {countLevel} from './utils';
@@ -15,13 +15,14 @@ import {countLevel} from './utils';
 export function calculateYearEndAwardsTax ({
     salary, // 月基础工资
     yearEndAwards, // 税前年终奖
-    yearEndAwardsNumber,
+    yearEndAwardsNumber, // 年终奖月数
     startingSalary,
 }: Pick<
     ICalculateData,
     'salary' | 'yearEndAwards' | 'yearEndAwardsNumber' | 'startingSalary'
 >) {
-    const awardsPreTax = yearEndAwards || salary * yearEndAwardsNumber; // 税前年终奖
+    // 使用 yearEndAwards 如果有值，否则按照月数计算 (salary * yearEndAwardsNumber)
+    const awardsPreTax = yearEndAwards || (salary * yearEndAwardsNumber);
     
     const base = (salary > startingSalary)
         ? awardsPreTax
