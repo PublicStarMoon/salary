@@ -149,11 +149,17 @@ export class UI {
                 const salaryResult = salary.salaryResult;
                 let value = subKey ? salaryResult[key][subKey] : salaryResult[key];
 
+                // Skip rendering for salaryPreTax in results
+                if (key === 'salaryPreTax') {
+                    div.style.display = 'none';
+                    return;
+                }
+
                 if (typeof value === 'number') {
                     value = value.toFixed(2) + '元';
                 } else if (value instanceof Array) {
                     // Improve array value display formatting
-                    if (key === 'salaryAfterTax' || key === 'salaryTax' || key === 'salaryPreTax') {
+                    if (key === 'salaryAfterTax' || key === 'salaryTax') {
                         // Create a table-like format for monthly data
                         const rows = [];
                         for (let i = 0; i < value.length; i += 3) {

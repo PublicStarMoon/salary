@@ -63,9 +63,9 @@ export const TEXT_MAP: TTransformMap<ICalculateData> = {
 
 export const RESULT_TEXT_MAP: TTransformMap<ICalculateResult> = {
     totalSalaryPreTax: {base: true, text: '年总税前收入', info: '一年总税前收入'},
-    totalSalaryAfterTax: {base: true, text: '年总税后收入', info: '一年总税后收入'},
+    totalSalaryAfterTax: {base: true, text: '年税后现金收入', info: '一年税后现金收入'},
     totalHousingFundPerYear: {base: true, text: '年公积金收入', info: '全年公积金收入(个人缴纳+公司缴纳)*12个月'},
-    totalSalaryAfterTaxIncludeHouseFund: {base: true, text: '年税后总包(含公积金)对标体制内', info: '年税后总包(含公积金，对标体制内)'},
+    totalSalaryAfterTaxIncludeHouseFund: {base: true, text: '年税后总包(含公积金，对标体制内）', info: '年税后总包(含公积金，对标体制内)'},
     salaryBase: {base: true, text: '月基础工资', info: '月基础工资'},
     salaryPreTax: {base: true, text: '每月税前收入', info: '12个月份税前月收入(含奖金津贴)'},
     salaryAfterTax: {base: true, text: '每月税后收入', info: '12个月份税后收入'},
