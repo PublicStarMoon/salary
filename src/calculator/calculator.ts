@@ -108,7 +108,7 @@ export function calculateSalary ({
         salaryAfterTaxAvg: avgArray(salaryAfterTax),
         salaryTax, // 每月个人所得税
         salaryTotalTax,
-        totalSalaryAfterTaxIncludeHouseFund, // 除去年终奖总收入
+        totalSalaryAfterTaxIncludeHouseFund, // 税后总包（包含公积金）用于对标体制内
         totalSalaryPreTax: awardsPreTax + salary * 12 + sumArray(extraBonus), // 税前年总收入
         totalSalaryAfterTax, // 税后年总收入
         totalHousingFundPerYear: (insuranceAndFund.totalHousingFund + insuranceAndFundOfCompany.totalHousingFund) * 12, // 年公积金收入
